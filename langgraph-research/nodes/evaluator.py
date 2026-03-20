@@ -52,7 +52,8 @@ def _llm_evaluate(state: ResearchState) -> bool:
     
     system = SystemMessage(content=(
         "You are evaluating whether we have enough search results to answer a question. "
-        "Reply with ONLY 'YES' if we have sufficient information, or 'NO' if we need more research."
+        "Reply with ONLY 'YES' if we have sufficient information. "
+        "If we need more research, reply with 'NO - <brief reason why more research is needed>'."
     ))
     human = HumanMessage(content=(
         f"Question: {state['query']}\n\n"
@@ -61,15 +62,20 @@ def _llm_evaluate(state: ResearchState) -> bool:
     ))
     
     response = llm.invoke([system, human])
-    decision = response.content.strip().upper()
+    decision = response.content.strip()
     
     # Debug: show what the LLM decided
-    print(f"{COLOR_EVALUATOR}  → LLM evaluation: '{decision[:50]}'{COLOR_RESET}")
+    print(f"{COLOR_EVALUATOR}  → LLM evaluation: '{decision}'{COLOR_RESET}")
     
     # Check for YES/NO explicitly
-    if decision.startswith("YES"):
+    decision_upper = decision.upper()
+    if decision_upper.startswith("YES"):
         return True
-    elif decision.startswith("NO"):
+    elif decision_upper.startswith("NO"):
+        # Extract and display the reason if provided
+        if " - " in decision:
+            reason = decision.split(" - ", 1)[1]
+            print(f"{COLOR_EVALUATOR}  → Reason: {reason}{COLOR_RESET}")
         return False
     else:
         # If unclear, default to needing more info

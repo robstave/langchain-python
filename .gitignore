@@ -35,6 +35,13 @@ venv.bak/
 .env.local
 .env.*.local
 
+# Logs
+logs/
+*.log
+
+# Generated answers
+answers/
+
 # IDE
 .vscode/
 .idea/
