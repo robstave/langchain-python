@@ -3,7 +3,7 @@
 from typing import TypedDict
 
 # ── Config ───────────────────────────────────────────────
-MODEL_NAME = "gpt-4.1-mini"
+MODEL_NAME = "gpt-5.4-mini"
 MAX_ROUNDS = 3
 PRO_TEMPERATURE = 0.7
 CON_TEMPERATURE = 0.7
