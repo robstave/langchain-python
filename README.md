@@ -12,3 +12,26 @@ This repository contains hands-on exercises and examples to understand how these
 | [langgraph-qna](langgraph-qna/) | Document Q&A pipeline — loads local markdown/text files, chunks them, retrieves relevant passages by keyword, and answers questions with cited sources. | OpenAI API key |
 | [langgraph-debate](langgraph-debate/) | Multi-agent debate — Pro and Con LLM agents argue a proposition across multiple rounds while a Judge scores and declares a winner. | OpenAI API key |
 | [langgraph-chat](langgraph-chat/) | Interactive chat agent — conversational LLM with in-memory checkpointing, iterative refinement, conversation summarization, and history listing. | OpenAI API key |
+
+## Testing
+
+Install test tooling once:
+
+```bash
+pip install -r requirements-test.txt
+```
+
+Run all section test suites:
+
+```bash
+./run-tests.sh
+```
+
+Run a specific section:
+
+```bash
+cd langgraph-chat && pytest -q
+cd langgraph-debate && pytest -q
+cd langgraph-qna && pytest -q
+cd langgraph-research && pytest -q
+```

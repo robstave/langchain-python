@@ -168,3 +168,14 @@ who you are, but you can't do that." [http_status_codes.md:76-80]
 Ask another question (or 'quit' to exit): quit
 Done!
 ```
+
+## Testing
+
+From this directory:
+
+```bash
+pip install -r ../requirements-test.txt
+pytest -q
+```
+
+This runs unit tests for document loading, chunk overlap, and keyword retrieval.

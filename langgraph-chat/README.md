@@ -84,3 +84,14 @@ Edit `state.py` to change:
 - Python 3.10+
 - OpenAI API key
 - Dependencies: `langgraph`, `langchain-community`, `langchain-openai`, `python-dotenv`
+
+## Testing
+
+From this directory:
+
+```bash
+pip install -r ../requirements-test.txt
+pytest -q
+```
+
+This runs unit tests for chat actions and history compression behavior.

@@ -197,6 +197,17 @@ Debate complete.
   Round 3: Pro 7/10, Con 7/10
 ```
 
+## Testing
+
+From this directory:
+
+```bash
+pip install -r ../requirements-test.txt
+pytest -q
+```
+
+This runs unit tests for judge score parsing and final-verdict flow.
+
 ## Ideas to Extend
 
 - **Audience node** — A fourth agent that votes after each round

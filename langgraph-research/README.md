@@ -279,3 +279,14 @@ Your choice (1/2/3): 1
 [Feedback] Answer accepted.
 [Export]   Saved to answers/20260319_225630_what_are_the_main.md
 ```
+
+## Testing
+
+From this directory:
+
+```bash
+pip install -r ../requirements-test.txt
+pytest -q
+```
+
+This runs unit tests for search deduplication, markdown export, and feedback routing behavior.
