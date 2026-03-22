@@ -1,5 +1,7 @@
 # LangGraph Chat Agent
 
+![Ducky Chat](../assets/ducky-chat.png)
+
 An interactive conversational chatbot built with LangGraph and in-memory checkpointing.
 Ask a question, get an answer, then iteratively refine your query, summarize the conversation,
 or review the full history.

@@ -1,5 +1,7 @@
 # LangGraph Research
 
+![Ducky Research](../assets/ducky-research.png)
+
 Research agent workflow using LangGraph that intelligently searches the web and synthesizes answers with citations.
 
 ## Project Structure

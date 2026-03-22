@@ -1,5 +1,7 @@
 # Multi-Agent Debate
 
+![Ducky Debate](../assets/ducky-debate.png)
+
 A LangGraph application where multiple LLM agents argue for and against a proposition
 across multiple rounds, with a judge scoring each round and declaring a winner.
 

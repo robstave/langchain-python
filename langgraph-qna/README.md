@@ -1,5 +1,7 @@
 # LangGraph Document Q&A
 
+![Ducky QnA](../assets/ducky-qna.png)
+
 Question-answering pipeline using LangGraph that loads local documents, chunks them, and answers questions with file:line citations.
 
 ## Project Structure
