@@ -46,7 +46,7 @@ sub-agents.
 
 ---
 
-### Exercise 5 — Basic Chat Agent (`langgraph-chat/`)
+### Exercise 5 — Basic Chat Agent (`langgraph-chat/`) ✅
 
 **Goal:** A conversational agent that maintains in-memory chat history across turns.
 
