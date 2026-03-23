@@ -161,6 +161,23 @@ A Lambda wrapper makes the agent a proper cloud function — callable from Event
 
 ---
 
+### Exercise 11 — MCP Cloud Memory Chat (`langgraph-chat-fastio-memory/`) ✅
+
+**Goal:** Build a chat agent that persists user facts/preferences in cloud files via MCP
+and reloads that memory at the start of every session.
+
+**Why:** Teaches remote-tool memory patterns where the agent uses MCP to read/write durable
+state instead of local files or local DB checkpointers.
+
+**Design:**
+- LangGraph loop similar to `langgraph-chat`
+- Startup bootstrap node to initialize/read memory file
+- Prompt conventions for `/remember`, `/recall`, and `/forget`
+- Fast.io MCP connection (`https://mcp.fast.io/mcp`) via API key
+- Memory stored as a durable markdown file in a dedicated workspace
+
+---
+
 ## Phase 3 — Personal Assistant System 🔲
 
 Once Phase 2 is complete, combine the learned patterns into a local multi-agent
@@ -221,5 +238,14 @@ personal system. Each agent is a LangGraph subgraph; a Supervisor routes queries
 | REST session / thread management | API 🔲 |
 | boto3 S3 read/write | AWS 🔲 |
 | Lambda handler + SAM local | AWS 🔲 |
+| MCP remote tool integration | MCP Chat ✅ |
+| Cloud file memory via MCP | MCP Chat ✅ |
 | Supervisor + subgraph routing | Phase 3 🔲 |
 | Proactive / scheduled agents | Phase 3 🔲 |
+
+
+
+other
+---------
+
+https://github.com/aws-samples/sample-mcp-server-s3/tree/main

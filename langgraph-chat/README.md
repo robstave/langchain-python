@@ -6,6 +6,17 @@ An interactive conversational chatbot built with LangGraph and in-memory checkpo
 Ask a question, get an answer, then iteratively refine your query, summarize the conversation,
 or review the full history.
 
+## Context
+
+This is a learning project, not a production chatbot. It is a working example used to
+practice core conversational-agent patterns with minimal scaffolding.
+
+What this project demonstrates:
+- Basic LangGraph chat loop design
+- Stateful conversation history in graph state
+- Action routing for refine/summarize/list flows
+- Checkpointing with `MemorySaver`
+
 ## Workflow
 
 ```mermaid

@@ -4,6 +4,17 @@
 
 Research agent workflow using LangGraph that intelligently searches the web and synthesizes answers with citations.
 
+## Context
+
+This is a learning project, not a production research assistant. It is a working example
+for iterative search-and-synthesis patterns with explicit graph state transitions.
+
+What this project demonstrates:
+- Planner/search/evaluator loops with termination controls
+- Search result accumulation and URL deduplication
+- LLM-based sufficiency checks before synthesis
+- User feedback routing and markdown export
+
 ## Project Structure
 
 ```
