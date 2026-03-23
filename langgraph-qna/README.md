@@ -4,6 +4,17 @@
 
 Question-answering pipeline using LangGraph that loads local documents, chunks them, and answers questions with file:line citations.
 
+## Context
+
+This is a learning project, not a full RAG platform. It is a working example focused on
+the core stages of document QA so each part can be inspected and modified easily.
+
+What this project demonstrates:
+- Local document ingestion and chunking
+- Retrieval strategy abstraction (`stuff` vs `keyword`)
+- Citation-oriented answer generation
+- Graph reuse for first question vs follow-up questions
+
 ## Project Structure
 
 ```

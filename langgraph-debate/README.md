@@ -5,6 +5,17 @@
 A LangGraph application where multiple LLM agents argue for and against a proposition
 across multiple rounds, with a judge scoring each round and declaring a winner.
 
+## Context
+
+This is a learning project, not a formal debate framework. It is a working example used
+to explore multi-agent orchestration patterns and prompt/persona design.
+
+What this project demonstrates:
+- Multi-role agent coordination in one graph
+- Round-based loop control with judge-driven routing
+- Persona injection from markdown files
+- Structured scoring extraction from LLM output
+
 ## What You'll Learn
 
 - Running multiple LLM personas with different system prompts and temperatures
