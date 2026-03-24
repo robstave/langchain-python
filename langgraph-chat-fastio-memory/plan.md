@@ -13,11 +13,11 @@ Create a chat exercise that keeps long-term user memory in Fast.io via MCP.
 
 ## Node Flow
 
-- `bootstrap_memory` → `take_prompt` → `ask_agent` → `show_results` → `choose_action`
-- `choose_action` routes:
-  - `done` → `END`
-  - `refine` → `ask_agent`
-  - `list` → `list_history` → `choose_action`
+- `bootstrap_memory` → `take_prompt`
+- `take_prompt` routes:
+  - normal prompt → `ask_agent` → `show_results` → `take_prompt`
+  - `/list` → `list_history` → `take_prompt`
+  - `/quit` or `quit` → `END`
 
 ## Configuration
 
