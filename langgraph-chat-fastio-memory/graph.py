@@ -7,7 +7,6 @@ from langgraph.graph import END, StateGraph
 from nodes import (
     ask_agent,
     bootstrap_memory,
-    choose_action,
     list_history,
     show_results,
     take_prompt,
@@ -15,13 +14,13 @@ from nodes import (
 from state import MemoryChatState
 
 
-def action_router(state: MemoryChatState) -> str:
-    action = state.get("action", "done")
-    if action == "refine":
-        return "refine"
-    if action == "list":
+def prompt_router(state: MemoryChatState) -> str:
+    query = state.get("query", "").strip().lower()
+    if query in {"quit", "/quit"}:
+        return "quit"
+    if query == "/list":
         return "list"
-    return "done"
+    return "ask"
 
 
 def build_graph():
@@ -31,26 +30,24 @@ def build_graph():
     graph.add_node("take_prompt", take_prompt)
     graph.add_node("ask_agent", ask_agent)
     graph.add_node("show_results", show_results)
-    graph.add_node("choose_action", choose_action)
     graph.add_node("list_history", list_history)
 
     graph.set_entry_point("bootstrap_memory")
     graph.add_edge("bootstrap_memory", "take_prompt")
-    graph.add_edge("take_prompt", "ask_agent")
-    graph.add_edge("ask_agent", "show_results")
-    graph.add_edge("show_results", "choose_action")
 
     graph.add_conditional_edges(
-        "choose_action",
-        action_router,
+        "take_prompt",
+        prompt_router,
         {
-            "done": END,
-            "refine": "ask_agent",
+            "quit": END,
+            "ask": "ask_agent",
             "list": "list_history",
         },
     )
 
-    graph.add_edge("list_history", "choose_action")
+    graph.add_edge("ask_agent", "show_results")
+    graph.add_edge("show_results", "take_prompt")
+    graph.add_edge("list_history", "take_prompt")
 
     memory = MemorySaver()
     return graph.compile(checkpointer=memory)

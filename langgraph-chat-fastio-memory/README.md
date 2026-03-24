@@ -23,13 +23,12 @@ What this project demonstrates:
 ```mermaid
 flowchart TD
     A[Bootstrap Fast.io memory] --> B[Take prompt]
-    B --> C[Ask LLM + MCP tools]
+    B -->|/list| F[List turns]
+    F --> B
+    B -->|/quit or quit| END[End]
+    B -->|normal message| C[Ask LLM + MCP tools]
     C --> D[Show result]
-    D --> E{Choose action}
-    E -->|Done| END[End]
-    E -->|Refine| C
-    E -->|List history| F[List turns]
-    F --> E
+    D --> B
 ```
 
 ## Project Structure
@@ -48,7 +47,6 @@ langgraph-chat-fastio-memory/
     ├── take_prompt.py
     ├── ask_agent.py
     ├── show_results.py
-    ├── choose_action.py
     └── list_history.py
 ```
 
@@ -81,6 +79,8 @@ You can use normal language ("remember that I like dark roast coffee"), or expli
 - `/remember <text>`: store fact/preference
 - `/recall` or `/memory`: retrieve stored memory
 - `/forget <text>`: remove/mark a memory item
+- `/list`: show chat turn history without calling the LLM
+- `/quit` or `quit`: end the interactive session
 
 ## Fast.io MCP Notes
 

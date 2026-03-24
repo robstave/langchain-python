@@ -31,6 +31,13 @@ async def main():
     print("  LangGraph Chat + Fast.io MCP Memory")
     print("  Persistent facts/preferences across sessions")
     print(f"{'═' * 60}")
+    print("Tips:")
+    print("  /remember <text>  -> store fact/preference")
+    print("  /recall or /memory -> recall saved memory")
+    print("  /forget <text>    -> remove/mark a memory item")
+    print("  /list             -> show conversation history")
+    print("  /quit or quit     -> end session")
+    print(f"{'═' * 60}")
 
     initial_state: MemoryChatState = {
         "query": "",
