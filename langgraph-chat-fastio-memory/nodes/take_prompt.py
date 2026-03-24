@@ -8,7 +8,9 @@ COLOR_RESET = "\033[0m"
 
 
 def take_prompt(state: MemoryChatState) -> MemoryChatState:
-    question = input(f"\n{COLOR_PROMPT}Enter your message:{COLOR_RESET} ").strip()
+    question = input(
+        f"\n{COLOR_PROMPT}Enter your message (/list, /quit):{COLOR_RESET} "
+    ).strip()
     if not question:
         question = "What do you remember about my preferences?"
 

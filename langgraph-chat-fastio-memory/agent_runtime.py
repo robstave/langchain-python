@@ -1,9 +1,11 @@
 """
 MCP runtime helpers for Fast.io-backed long-term memory.
 """
+import ast
 import os
 import re
 import base64
+import json
 from collections.abc import Mapping, Sequence
 from typing import Any
 
@@ -176,6 +178,52 @@ def _extract_last_assistant_text(result: Any) -> str:
     return _text_from_content(result)
 
 
+def _parse_structured_text(text: str) -> Any | None:
+    """Parse JSON-like payloads returned by MCP tools."""
+    try:
+        return json.loads(text)
+    except (json.JSONDecodeError, TypeError):
+        pass
+    try:
+        return ast.literal_eval(text)
+    except (ValueError, SyntaxError, TypeError):
+        return None
+
+
+def _extract_storage_items(list_payload: Any) -> list[dict[str, Any]]:
+    """Extract node items from the storage list response across known shapes."""
+    if isinstance(list_payload, dict):
+        nodes = list_payload.get("nodes")
+        if isinstance(nodes, dict) and isinstance(nodes.get("items"), list):
+            return [item for item in nodes["items"] if isinstance(item, dict)]
+
+        items = list_payload.get("items")
+        if isinstance(items, list):
+            return [item for item in items if isinstance(item, dict)]
+
+        if isinstance(nodes, list):
+            extracted: list[dict[str, Any]] = []
+            for node in nodes:
+                if isinstance(node, dict):
+                    node_items = node.get("items")
+                    if isinstance(node_items, list):
+                        extracted.extend(item for item in node_items if isinstance(item, dict))
+            if extracted:
+                return extracted
+
+    if isinstance(list_payload, list):
+        return [item for item in list_payload if isinstance(item, dict)]
+
+    return []
+
+
+def _canonical_node_id(node_id: str | None) -> str:
+    """Normalize ID formats so dashed and non-dashed forms compare equal."""
+    if not node_id:
+        return ""
+    return re.sub(r"[^a-z0-9]", "", node_id.lower())
+
+
 def _memory_system_prompt() -> str:
     file_hint = (
         f"  Memory file node_id (EXACT value for read-content/delete): '{_memory_file_id}'\n"
@@ -285,8 +333,6 @@ async def bootstrap_memory_session() -> str:
     This avoids relying on the LLM to construct correct tool parameters.
     """
     global _memory_file_id
-    import json
-
     try:
         raw_tools = await _get_raw_tools()
     except Exception as e:
@@ -309,9 +355,9 @@ async def bootstrap_memory_session() -> str:
     # 2. Check if the memory file already exists
     print(f"[Debug] list result_text (first 500): {result_text[:500]!r}")
     file_id = None
-    try:
-        data = json.loads(result_text)
-        items = data.get("nodes", {}).get("items", [])
+    data = _parse_structured_text(result_text)
+    if data is not None:
+        items = _extract_storage_items(data)
         print(f"[Debug] nodes.items count: {len(items)}")
         for item in items:
             print(f"[Debug]   item name={item.get('name')!r}  id={item.get('id')!r}")
@@ -321,8 +367,8 @@ async def bootstrap_memory_session() -> str:
                 break
         if file_id is None:
             print(f"[Debug] Memory file '{MEMORY_FILE_NAME}' NOT found in listing")
-    except (json.JSONDecodeError, TypeError) as e:
-        print(f"[Debug] Failed to parse list result: {e}")
+    else:
+        print("[Debug] Failed to parse list result")
 
     if file_id:
         _memory_file_id = file_id
@@ -343,13 +389,11 @@ async def bootstrap_memory_session() -> str:
                 "parent_node_id": "root",
             })
             create_text = _text_from_content(create_result)
-            try:
-                created = json.loads(create_text)
+            created = _parse_structured_text(create_text)
+            if isinstance(created, Mapping):
                 file_id = created.get("new_file_id") or created.get("id")
                 if file_id:
                     _memory_file_id = file_id
-            except (json.JSONDecodeError, TypeError):
-                pass
             return f"Created new memory file '{MEMORY_FILE_NAME}'."
         except Exception as e:
             return f"Memory bootstrap failed (create): {e}"
@@ -428,8 +472,6 @@ async def _direct_write_memory(new_content: str) -> str:
     then delete the old file only after the upload succeeds.
     """
     global _memory_file_id
-    import json
-
     old_file_id = _memory_file_id
     ws_id = MEMORY_WORKSPACE_NAME
 
@@ -453,11 +495,9 @@ async def _direct_write_memory(new_content: str) -> str:
             "parent_node_id": "root",
         })
         result_text = _text_from_content(result)
-        try:
-            data = json.loads(result_text)
+        data = _parse_structured_text(result_text)
+        if isinstance(data, Mapping):
             new_id = data.get("new_file_id") or data.get("id")
-        except (json.JSONDecodeError, TypeError):
-            pass
     except Exception as e:
         return f"Memory write failed (upload): {e}"
 
@@ -466,6 +506,9 @@ async def _direct_write_memory(new_content: str) -> str:
 
     print(f"[write_memory] upload OK  old_id={old_file_id!r}  new_id={new_id!r}")
     _memory_file_id = new_id
+
+    old_norm = _canonical_node_id(old_file_id)
+    new_norm = _canonical_node_id(new_id)
 
     # Verify new file appears in workspace listing before deleting old file
     new_file_confirmed = False
@@ -479,19 +522,37 @@ async def _direct_write_memory(new_content: str) -> str:
                 "node_id": "root",
             })
             list_text = _text_from_content(list_result)
-            try:
-                list_data = json.loads(list_text)
-                items = list_data if isinstance(list_data, list) else list_data.get("items", [])
+            list_data = _parse_structured_text(list_text)
+            if list_data is not None:
+                items = _extract_storage_items(list_data)
                 ids = {item.get("id") for item in items if isinstance(item, dict)}
-                new_file_confirmed = new_id in ids
-                print(f"[write_memory] listing ids={ids}  new_confirmed={new_file_confirmed}")
-            except (json.JSONDecodeError, TypeError, AttributeError):
-                pass
+                canonical_ids = {_canonical_node_id(str(file_id)) for file_id in ids if file_id}
+                new_file_confirmed = bool(new_id in ids or (new_norm and new_norm in canonical_ids))
+                print(
+                    "[write_memory] listing ids="
+                    f"{ids}  canonical_ids={canonical_ids}  new_confirmed={new_file_confirmed}"
+                )
         except Exception as le:
             print(f"[write_memory] listing failed: {le}")
 
+    # Fallback: listing shape/consistency can lag; confirm by directly querying new file id.
+    if storage and not new_file_confirmed:
+        try:
+            await storage.ainvoke({
+                "context_type": "workspace",
+                "context_id": ws_id,
+                "action": "details",
+                "node_id": new_id,
+            })
+            new_file_confirmed = True
+            print("[write_memory] details lookup confirmed new file")
+        except Exception as ce:
+            print(f"[write_memory] details lookup failed: {ce}")
+
+    ids_are_distinct = bool(old_norm and new_norm and old_norm != new_norm)
+
     # Only delete old file when new one is confirmed present and it's different
-    if new_file_confirmed and old_file_id and old_file_id != new_id:
+    if new_file_confirmed and old_file_id and ids_are_distinct:
         try:
             await storage.ainvoke({
                 "context_type": "workspace",
@@ -502,6 +563,8 @@ async def _direct_write_memory(new_content: str) -> str:
             print(f"[write_memory] deleted old file {old_file_id!r}")
         except Exception as de:
             print(f"[write_memory] delete failed (non-fatal): {de}")
+    elif new_file_confirmed and old_file_id and not ids_are_distinct:
+        print("[write_memory] old/new ids refer to same file; skipping delete")
     elif not new_file_confirmed:
         print(f"[write_memory] WARNING: new file {new_id!r} not found in listing — skipping delete of old file")
 
@@ -566,4 +629,3 @@ async def ask_with_memory(user_query: str, history: list[dict]) -> str:
 
     result = await _ainvoke_with_schema_fallback(messages)
     return _extract_last_assistant_text(result)
-
